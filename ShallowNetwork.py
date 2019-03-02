@@ -18,7 +18,7 @@ def sigmoid(x, n):
     @returns: float
     '''
     x = x.astype('float64')
-    temp_sig = np.exp((-x).round(10), dtype="float64")
+    temp_sig = np.exp((-x).round(7), dtype="float64")
     temp_sig = 1 / (temp_sig + 1)
     if n == 0:
         return temp_sig
@@ -492,6 +492,14 @@ class ShallowNetwork:
         # --------------------------------------------------------------------------------
         self.trainings_done += 1
         self.update_learning_rate()
+
+    def train(self, samples, epochs, labels=None):
+        for i in range(epochs):
+            if labels is None:
+                self.single_epoch_training(X=samples)
+            else:
+                self.single_epoch_training(X=samples, labels=labels)
+            print(f'Epoch: {i+1} Loss function: {self.loss_function(samples=samples, labels=labels)}')       
 
     def update_learning_rate(self):
         self.learning_rate = (
