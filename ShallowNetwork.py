@@ -280,6 +280,7 @@ class ShallowNetwork:
         self.learning_rate = learning_rate
         self.learning_rate_initial = learning_rate
         self.momentum = momentum
+        self.learning_rate_decay = 50
         # Loss function
         self.loss_function_all = loss_function
         self.loss_function_single_point = loss_function_single_point
@@ -404,12 +405,13 @@ class ShallowNetwork:
             raise Exception(f'Parameter n has to be a positive integer.')
 
     # --------------------------------------------------------------------------------
-    # --------------------------------------------------------------------------------
+    # -----Learning methods-----------------------------------------------------------
     # --------------------------------------------------------------------------------
 
+    # Updating the parameters in a single epochs
     def single_epoch_training(self, X, labels=None):
         '''
-        Performs a single epoch training and updates the weights of the network
+        Performs a single epoch training on all samples and updates the weights of the network
         according to the simple online gradient descent backpropagation. 
         @params: 
         1. X - numpy array, set of input vectors,
@@ -490,25 +492,48 @@ class ShallowNetwork:
             # Save change for the next step
             prev_visible_weights_change = curr_visible_weights_change
         # --------------------------------------------------------------------------------
+        # Update learning parameters
         self.trainings_done += 1
         self.update_learning_rate()
 
+    # --------------------------------------------------------------------------------
+    # Many epoch training
     def train(self, samples, epochs, labels=None):
-        for i in range(epochs):
-            if labels is None:
-                self.single_epoch_training(X=samples)
-            else:
-                self.single_epoch_training(X=samples, labels=labels)
-            print(f'Epoch: {i+1} Loss function: {self.loss_function(samples=samples, labels=labels)}')       
+        '''
+        Performs the given number of training epochs and prints the current loss function. 
+        @params: 
+        1. X - numpy array, set of input vectors,
+        2. labels - numpy array, in case of supervised,
+        3. epochs - positive integer.
+        '''
+        if isinstance(epochs, int) and epochs >0:
+            self.learning_rate_decay = 0.2 * epochs
+            for i in range(epochs):
+                if labels is None:
+                    self.single_epoch_training(X=samples)
+                else:
+                    self.single_epoch_training(X=samples, labels=labels)
+                print(f'Epoch: {i+1} Loss function: {self.loss_function(samples=samples, labels=labels)}')
+        else:
+            raise Exception(f'Parameter epochs has to be a positive integer.')
 
     def update_learning_rate(self):
+        '''
+        Updates the learning rate according basing on the supplied decay period.
+        '''
         self.learning_rate = (
             self.learning_rate_initial * 0.1
             + 0.9 * self.learning_rate_initial *
-            (np.exp(-self.trainings_done/50))
+            (np.exp(-self.trainings_done/self.learning_rate_decay))
         )
 
     def loss_function(self, samples, labels):
+        '''
+        Wrapper for the supplied loss function.
+        @params: 
+        1. X - numpy array, set of input vectors,
+        2. labels - numpy array, in case of supervised.
+        '''
         return self.loss_function_all(self, samples, labels)
     # --------------------------------------------------------------------------------
     # --------------------------------------------------------------------------------
