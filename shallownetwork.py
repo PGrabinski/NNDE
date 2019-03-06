@@ -1,204 +1,8 @@
 import numpy as np
 from random import shuffle
-# ---------------------------------------------------------------------------------------------------------
-# -----Activation Functions--------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------------------------------------
-# Sigmoid activation function
-# ---------------------------------------------------------------------------------------------------------
-
-
-def sigmoid(x, n):
-    '''
-    Sigmoid activation function and its first three derivatives.
-    @params:
-    1. x - float, the argument,
-    2. n - non-negative integer, n-th derivative
-    @returns: float
-    '''
-    x = x.astype('float64')
-    temp_sig = np.exp((-x).round(7), dtype="float64")
-    temp_sig = 1 / (temp_sig + 1)
-    if n == 0:
-        return temp_sig
-    elif n == 1:
-        return temp_sig * (1 - temp_sig)
-    elif n == 2:
-        return temp_sig * (1 - temp_sig) * (1 - 2 * temp_sig)
-    elif n == 3:
-        return temp_sig * (1 - temp_sig) * (1 - 6 * temp_sig * (1 - temp_sig))
-    else:
-        raise Exception(
-            f'Parameter n should be non-negative integer, but n = {n}')
-# ---------------------------------------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------------------------------------
-# Linear activation function
-# ---------------------------------------------------------------------------------------------------------
-
-
-def linear(x, n):
-    '''
-    Linear activation function and its derivatives.
-    @params:
-    1. x - float, the argument,
-    2. n - non-negative integer, n-th derivative
-    @returns: float
-    '''
-    if n == 0:
-        return x
-    elif n == 1:
-        return 1
-    elif n > 1:
-        return 0
-    else:
-        raise Exception(
-            f'Parameter n should be non-negative integer, but n = {n}')
-# ---------------------------------------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------------------------------------
-# ReLu activation function
-# ---------------------------------------------------------------------------------------------------------
-
-
-def ReLu(x, n):
-    '''
-    Relu function f(x)=max(0, x) and its derivatives.
-    @params:
-    1. x - float, the argument,
-    2. n - non-negative integer, n-th derivative
-    @returns: float
-    '''
-    if n == 0:
-        return np.max(0, x)
-    elif n == 1:
-        return 0 if x < 0 else 1
-    elif n > 1:
-        return 0
-    else:
-        raise Exception(
-            f'Parameter n should be non-negative integer, but n = {n}')
-# ---------------------------------------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------------------------------------
-# Kronecker delta function
-# ---------------------------------------------------------------------------------------------------------
-def kronecker_delta(i, j):
-    '''
-    Kronecker delta function.
-    @params:
-    i, j - non-negative integers
-    @returns: boolean
-    '''
-    if isinstance(i, int) and isinstance(j, int) and i >= 0 and j >= 0:
-        return i == j
-    else:
-        raise Exception(
-            f'The arguments should be non-negative integers, but i = {i} and j = {j}.')
-# ---------------------------------------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------------------------------------
-# -----Dense Layer Class-----------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------
-class Dense_Layer:
-    '''
-    Class representing a single layer in a densly connected feedforward network.
-    It consits of the following fields:
-    1. input_dim - dimension of the input vector,
-    2. neuron_number - number of units in the layer,
-    3. activation_function - activation function for all of the units in the layer,
-    4. weights - matrix containing all the weights among the previous layer and the current layer,
-        its of dimension neuron_number times input_dim,
-    5. bias - bias vector added to the weighted input before activation function, its dimension is neuron_number times 1.
-    It consists of the following methods described below ath their declaration:
-    1. initialization,
-    2. linear_response,
-    3. forward_pass.
-    '''
-    # ---------------------------------------------------------------------------------------------------------
-
-    def __init__(
-        self,
-        input_dim,
-        neuron_number,
-        activation_function=sigmoid,
-        zero_bias=False,
-        identity=False,
-    ):
-        '''
-        Initialization of the class:
-        @params:
-        1. input_dim - positive int,
-        2. neuron number - positive int,
-        3. activation_function - function or a callable instance of a class,
-        4. zero_bias - boolean, zero bias vs bias sampled from [-0.25, 0.25]^neuron_number,
-        5. identity - boolea, if weights should be and identity matrix or sampled from [-1,1] intervals.
-        '''
-        if isinstance(input_dim, int) and input_dim > 0:
-            self.input_dim = input_dim
-        else:
-            raise Exception('Input dimension has to be a positive integer.')
-        if isinstance(neuron_number, int) and neuron_number > 0:
-            self.neuron_number = neuron_number
-        else:
-            raise Exception('Neuron number has to be a positive integer.')
-        if callable(activation_function):
-            self.activation_function = activation_function
-        else:
-            raise Exception('Activation function has to be callable.')
-        if isinstance(zero_bias, bool):
-            if not zero_bias:
-                self.bias = (
-                    0.5
-                    * np.random.random(size=(self.neuron_number, 1)).astype(dtype="float64")
-                    - 0.25
-                )
-            else:
-                self.bias = np.zeros(
-                    shape=(self.neuron_number, 1)).astype(dtype="float64")
-        else:
-            raise Exception('zero_bias property has to be boolean.')
-        if isinstance(identity, bool):
-            if not identity:
-                self.weights = (
-                    2
-                    * np.random.random(size=(neuron_number, self.input_dim)).astype(
-                        dtype="float64"
-                    )
-                    - 1
-                )
-            else:
-                self.weights = np.eye(
-                    neuron_number, self.input_dim).astype(dtype="float64")
-        else:
-            raise Exception('identity property has to be boolean.')
-
-    def forward_pass(self, x):
-        '''
-        Passes the input vector through the layer by using the activation function on the linear response: f(u(x))
-        @params: x - numpy array, input vector
-        @returns: numpy array,
-        '''
-        return self.activation_function(self.linear_response(x), 0)
-
-    def linear_response(self, x):
-        '''
-        Performs the linear transformation: u=Wx+b
-        @params: x - float, input vector
-        @returns: float
-        '''
-        resp = 0
-        if isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] > 1:
-            return (self.weights @ x).reshape((self.weights.shape[0], 1)) + self.bias
-        elif isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] == 1:
-            return self.weights * x + self.bias
-        else:
-            raise Exception(
-                f'The argument should be of the layer input dimension.')
-
+from utilities import *
+from denselayer import Dense_Layer
+import rmse
 # ---------------------------------------------------------------------------------------------------------
 # -----Shallow Network Class-------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------
@@ -225,16 +29,19 @@ class ShallowNetwork:
     4. network_derivative_bias,
     5. network_derivative_hidden_weights,
     6. network_derivative_visible_weights,
-    7.
+    7. loss_function
+    8. update_learning_rate
+    9. train_single_epoch
+    10. train
     '''
 
     # --------------------------------------------------------------------------------
-    def __init__(self, loss_function, loss_function_single_point, bias_change,
-                 hidden_weights_change, visible_weights_change,
+    def __init__(self, loss_function=None, loss_function_single_point=None, bias_change=None,
+                 hidden_weights_change=None, visible_weights_change=None,
                  input_dim=1, hidden_dim=1, visible_dim=1,
                  activation_function_hidden=sigmoid,
                  learning_rate=1e-1, momentum=1e-1,
-                 unsupervised=False):
+                 unsupervised=False, predefined_loss=None):
         '''
         Initialization of the class:
         @params:
@@ -249,7 +56,8 @@ class ShallowNetwork:
         9. bias_change - callable, update rule for bias,
         10. hidden_weights_change - callable, update rule for hidden weights,
         11. visible_weights_change - callable, update rule for visible weights
-        12. unsupervised - boolean, default True. 
+        12. unsupervised - boolean, default True,
+        13. predefined_loss - string, default None.
         '''
         # Supervised vs Unsupervised
         self.unsupervised = unsupervised
@@ -281,13 +89,28 @@ class ShallowNetwork:
         self.learning_rate_initial = learning_rate
         self.momentum = momentum
         self.learning_rate_decay = 50
-        # Loss function
-        self.loss_function_all = loss_function
-        self.loss_function_single_point = loss_function_single_point
-        # Parameters changes
-        self.bias_change = bias_change
-        self.hidden_weights_change = hidden_weights_change
-        self.visible_weights_change = visible_weights_change
+        if predefined_loss is None:
+            if (loss_function is None or loss_function_single_point is None or
+            bias_change is None  or hidden_weights_change is None
+            or visible_weights_change is None):
+                raise Exception('Either define loss function or use a predefined one.')
+            # Loss function
+            self.loss_function_all = loss_function
+            self.loss_function_single_point = loss_function_single_point
+            # Parameters changes
+            self.bias_change = bias_change
+            self.hidden_weights_change = hidden_weights_change
+            self.visible_weights_change = visible_weights_change
+        elif predefined_loss == 'rmse':
+            # Loss function
+            self.loss_function_all = rmse.loss_function_all
+            self.loss_function_single_point = rmse.loss_function_single_point
+            # Parameters changes
+            self.bias_change = rmse.bias_change_point
+            self.hidden_weights_change = rmse.hidden_weights_change_point
+            self.visible_weights_change = rmse.visible_weights_change_point
+            
+
 
     # --------------------------------------------------------------------------------
     # Forward pass
@@ -305,11 +128,12 @@ class ShallowNetwork:
                 hidden_result = self.hidden_layer.forward_pass(input_result)
                 return self.visible_layer.forward_pass(hidden_result)
             else:
-                linear = self.input_layer.linear_response(input_result)
-                return self.visible_layer.weights @ (
+                linear = self.hidden_layer.linear_response(input_result)
+                network_derivative = self.visible_layer.weights @ (
                     self.hidden_layer.weights ** n *
-                    self.hidden_layer.activation_function(linear, n)
+                    self.hidden_layer.activation_function(linear, n) 
                 )
+                return network_derivative
         else:
             raise Exception(f'Parameter n has to be a positive integer.')
 
