@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import binom
 # ---------------------------------------------------------------------------------------------------------
 # -----Activation Functions--------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------
@@ -25,11 +26,15 @@ def sigmoid(x, n):
         return temp_sig * (1 - temp_sig)
     elif n == 2:
         return temp_sig * (1 - temp_sig) * (1 - 2 * temp_sig)
-    elif n == 3:
-        return temp_sig * (1 - temp_sig) * (1 - 6 * temp_sig * (1 - temp_sig))
+    elif n > 2:
+        derivative = 0
+        for k in range(n):
+            for j in range(k):
+                derivative += (-1) ** j * (j+1)**n * binom(k, j) * temp_sig ** (k+1)
+        return derivative
     else:
         raise Exception(
-            f'Parameter n should be non-negative integer, but n = {n}')
+            f'Parameter n should be non-negative integer not higher than 4, but n = {n}')
 # ---------------------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------------------

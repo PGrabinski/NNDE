@@ -92,11 +92,10 @@ class Dense_Layer:
         @params: x - float, input vector
         @returns: float
         '''
-        resp = 0
         if isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] > 1:
             return (self.weights @ x).reshape((self.weights.shape[0], 1)) + self.bias
         elif isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] == 1:
             return self.weights * x + self.bias
         else:
             raise Exception(
-                f'The argument should be of the layer input dimension.')
+                f'The argument should be of the input layer dimension.')
