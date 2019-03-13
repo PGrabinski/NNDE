@@ -17,8 +17,7 @@ def sigmoid(x, n):
     2. n - non-negative integer, n-th derivative
     @returns: float
     '''
-    x = x.astype('float64')
-    temp_sig = np.exp((-x).round(7), dtype="float64")
+    temp_sig = np.exp(-x, dtype="float128")
     temp_sig = 1 / (temp_sig + 1)
     if n == 0:
         return temp_sig

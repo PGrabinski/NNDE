@@ -150,7 +150,20 @@ class ShallowNetwork:
         else:
             raise Exception(
                 'The degrees parameter should be a 1d numpy array of the input dimension length.')
-
+    # --------------------------------------------------------------------------------
+    #  Reduced weights P vector for an arbitrary derivative
+    def reduced_derivative_P_vector(self, degrees, p):
+        if isinstance(degrees, np.ndarray) and degrees.shape[0] == self.input_dim:
+            P = np.ones((self.hidden_dim, 1))
+            for i in range(self.input_dim):
+                if i != p:
+                    P *= self.hidden_layer.weights[:, i].reshape((self.hidden_dim, 1)) ** degrees[i]
+                else:
+                    P *= self.hidden_layer.weights[:, i].reshape((self.hidden_dim, 1)) ** (degrees[i] - p)
+            return P
+        else:
+            raise Exception(
+                'The degrees parameter should be a 1d numpy array of the input dimension length.')
     # --------------------------------------------------------------------------------
     # Forward pass for arbitrary derivative
     def forward_pass_arbitrary_derivative(self, x, degrees):
@@ -232,8 +245,7 @@ class ShallowNetwork:
                             * hidden_activation_deriv_np1[m]
                             * point[p]
                             + self.visible_layer.weights[j, m]
-                            * P[m]
-                            * (self.hidden_layer.weights[m, p]**-1)
+                            * self.reduced_derivative_P_vector(degrees, p)[m]
                             * degrees[p]
                             * hidden_activation_deriv_n[m]
                         )
@@ -410,6 +422,15 @@ class ShallowNetwork:
             # --------------------------------------------------------------------------------
             # Bias change for given point
             curr_bias_change = self.bias_change(self, point, label)
+            # --------------------------------------------------------------------------------
+            # Hidden weights change for the given point
+            curr_hidden_weights_change = self.hidden_weights_change(self,
+                                                                    point, label)
+            # --------------------------------------------------------------------------------
+            # Visible weights change for the given point
+            curr_visible_weights_change = self.visible_weights_change(self,
+                                                                      point, label)
+            # --------------------------------------------------------------------------------
             # Linear combination: - learning_rate (1 - momentum) curr_change + momentum *prev_change
             curr_bias_change = (
                 -curr_bias_change *
@@ -420,9 +441,6 @@ class ShallowNetwork:
             # Save change for the next step
             prev_bias_change = curr_bias_change
             # --------------------------------------------------------------------------------
-            # Hidden weights change for the given point
-            curr_hidden_weights_change = self.hidden_weights_change(self,
-                                                                    point, label)
             # Linear combination: - learning_rate (1 - momentum) curr_change + momentum *prev_change
             curr_hidden_weights_change = (
                 -curr_hidden_weights_change
@@ -434,9 +452,6 @@ class ShallowNetwork:
             # Save change for the next step
             prev_hidden_weights_change = curr_hidden_weights_change
             # --------------------------------------------------------------------------------
-            # Visible weights change for the given point
-            curr_visible_weights_change = self.visible_weights_change(self,
-                                                                      point, label)
             # Linear combination: - learning_rate (1 - momentum) curr_change + momentum *prev_change
             curr_visible_weights_change = (
                 -curr_visible_weights_change
@@ -454,7 +469,7 @@ class ShallowNetwork:
 
     # --------------------------------------------------------------------------------
     # Many epoch training
-    def train(self, samples, epochs, labels=None):
+    def train(self, samples, epochs, labels=None, verbose=True):
         '''
         Performs the given number of training epochs and prints the current loss function. 
         @params: 
@@ -469,8 +484,9 @@ class ShallowNetwork:
                     self.single_epoch_training(X=samples)
                 else:
                     self.single_epoch_training(X=samples, labels=labels)
-                print(
-                    f'Epoch: {i+1} Loss function: {self.loss_function(samples=samples, labels=labels)}')
+                if verbose:
+                    print(
+                        f'Epoch: {i+1} Loss function: {self.loss_function(samples=samples, labels=labels)}')
         else:
             raise Exception(f'Parameter epochs has to be a positive integer.')
 
