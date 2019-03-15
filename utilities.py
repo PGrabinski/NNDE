@@ -17,7 +17,9 @@ def sigmoid(x, n):
     2. n - non-negative integer, n-th derivative
     @returns: float
     '''
-    temp_sig = np.exp(-x, dtype="float128")
+    x = np.maximum(-10, x)
+    x = np.minimum(10, x)
+    temp_sig = np.exp(-np.round(x,5), dtype="float128")
     temp_sig = 1 / (temp_sig + 1)
     if n == 0:
         return temp_sig
@@ -27,8 +29,8 @@ def sigmoid(x, n):
         return temp_sig * (1 - temp_sig) * (1 - 2 * temp_sig)
     elif n > 2:
         derivative = 0
-        for k in range(n):
-            for j in range(k):
+        for k in range(n+1):
+            for j in range(k+1):
                 derivative += (-1) ** j * (j+1)**n * binom(k, j) * temp_sig ** (k+1)
         return derivative
     else:
