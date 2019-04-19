@@ -1,11 +1,27 @@
 # Solving Differential Equations with Neural Networks
 
-**Reproduction of the paper:** Lagaris, I., Likas, A., & Fotiadis, D. 1997, Computer Physics Communications,104, 1
+### **Reproduction of the papers:** 
 
-**Instruction**: To see results check the NNDE notebook. To see the implementation of the network see ShallowNetwork.py.
+[1] Lagaris, I., Likas, A., & Fotiadis, D. 1997, Computer Physics Communications,104, 1
 
-**To-to-do list:**
+## **Roadmap**: 
+The repository contains three parts:
+* Tensorflow version - code based on the Tensorflow library, enables simple :
+    * Works:
+        * ODEs with easy Dirichlet and Neumann initial condition implementation,
+        * Systems of coupled ODEs,
+    * To be done:
+        * PDEs (*in progress*),
+        * Neumann boundary conditions for PDEs,
+        * *call* method generation optimization,
+* Numpy_version - code from scratch based only on numpy for solving differential equations via the trial solution with a shallow network:
+    * Works:
+        * ODEs with Dirichlet and Neumann boundary conditions,
+        * PDEs with Dirichlet Conditions,
+    * To be done:
+        * Neumann boundary conditions for PDEs,
+        * Systems of coupled ODEs,
+        * optimization of the tensor operations,
 
-* Consider other method of populating derivative tensors (numpy.from_function?)
-* Refactor training methods of the Shallow Network class into a class Optimizer.
-* Abstract the learning components to be provided for a task (parameters update rules, etc.).
+* Others - some other experiments:
+    * Keras version - very inelastic and inelegant code.
