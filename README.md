@@ -8,17 +8,17 @@
 The repository contains three parts:
 * Tensorflow version - code based on the Tensorflow library, enables simple :
     * Works:
-        * ODEs with easy Dirichlet and Neumann initial condition implementation (Examples no. 1-3),
+        * ODEs with easy Dirichlet and Neumann initial conditions (Examples no. 1-3),
         * Systems of coupled ODEs (Example no. 4),
         * PDEs with Dirichlet boundary condition (Example no. 5),
     * To be done:
         * Neumann boundary conditions for PDEs (Examples no. 6-7 - written, not converging),
-        * *call* method generation optimization,
-        * automatic *call* method generation for PDEs,
+        * Custom weights initialization,
+        * Better optimization procedure (BFGS),
         
 * Numpy_version - code from scratch based only on numpy for solving differential equations via the trial solution with a shallow network:
     * Works:
-        * ODEs with Dirichlet and Neumann boundary conditions Examples( no. 1-3),
+        * ODEs with Dirichlet and Neumann boundary conditions Examples (no. 1-3),
         * PDEs with Dirichlet Conditions (Example no. 5),
     * To be done:
         * Neumann boundary conditions for PDEs,

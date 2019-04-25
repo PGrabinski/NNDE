@@ -59,8 +59,10 @@ class TrialSolution(tf.keras.models.Model):
                 loss, self.trial_solution.trainable_variables)
             optimizer.apply_gradients(
                 zip(gradients, self.trial_solution.trainable_variables))
-            train_loss(loss)
         for epoch in range(epochs):
-            train_step(X)
+            for x in X:
+                x_tensor = tf.reshape(x, shape=(1, X.shape[1]))
+                train_step(x_tensor)
+            train_loss(diff_loss(self,X))
             if (epoch+1) % message_frequency == 0:
                 print(f'Epoch: {epoch+1} Loss: {train_loss.result().numpy()}')
