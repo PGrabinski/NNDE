@@ -19,7 +19,7 @@ def sigmoid(x, n):
     '''
     x = np.maximum(-10, x)
     x = np.minimum(10, x)
-    temp_sig = np.exp(-np.round(x,5), dtype="float128")
+    temp_sig = np.exp(-np.round(x,5), dtype="float64")
     temp_sig = 1 / (temp_sig + 1)
     if n == 0:
         return temp_sig
