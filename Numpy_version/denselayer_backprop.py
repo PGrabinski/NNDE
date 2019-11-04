@@ -52,39 +52,33 @@ class Dense_Layer:
         else:
             raise Exception('Activation function has to be callable.')
         if isinstance(zero_bias, bool):
+            self.zero_bias = zero_bias
             if not zero_bias:
                 self.bias = (
-                    0.5
-                    * np.random.random(size=(self.neuron_number, 1)).astype(dtype="float64")
-                    - 0.25
-                )
+                    0.5 * np.random.random(size=(self.neuron_number, 1)).astype(dtype="float64") - 0.25)
             else:
                 self.bias = np.zeros(
                     shape=(self.neuron_number, 1)).astype(dtype="float64")
         else:
             raise Exception('zero_bias property has to be boolean.')
         if isinstance(identity, bool):
+            self.identity = identity
             if not identity:
-                self.weights = (
-                    2
-                    * np.random.random(size=(neuron_number, self.input_dim)).astype(
-                        dtype="float64"
-                    )
-                    - 1
-                )
+                self.weights = (2 * np.random.random(size=(neuron_number,
+                                                           self.input_dim)).astype(dtype="float64") - 1)
             else:
                 self.weights = np.eye(
                     neuron_number, self.input_dim).astype(dtype="float64")
         else:
             raise Exception('identity property has to be boolean.')
 
-    def forward_pass(self, x):
+    def __call__(self, x, n=0):
         '''
         Passes the input vector through the layer by using the activation function on the linear response: f(u(x))
         @params: x - numpy array, input vector
         @returns: numpy array,
         '''
-        return self.activation_function(self.linear_response(x), 0)
+        return self.activation_function(self.linear_response(x), n=n)
 
     def linear_response(self, x):
         '''
@@ -92,10 +86,20 @@ class Dense_Layer:
         @params: x - float, input vector
         @returns: float
         '''
-        if isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] > 1:
-            return (self.weights @ x).reshape((self.weights.shape[0], 1)) + self.bias
-        elif isinstance(x, np.ndarray) and x.shape[0] == self.input_dim and x.shape[0] == 1:
-            return self.weights * x + self.bias
+        
+        if isinstance(x, np.ndarray) and len(x.shape) == 1 and self.input_dim == 1:
+            x = x.reshape(-1, 1)
+        elif isinstance(x, np.ndarray) and len(x.shape) > 1 and x.shape[1] == self.input_dim:
+            return x @ self.weights.T + self.bias.T
         else:
             raise Exception(
-                f'The argument should be of the input layer dimension.')
+                f'The argument should be a numpy array of the input dimension.')
+
+    def derivative(self, x):
+        return self.activation_function(self.linear_response(x), 1)
+
+    def update_parameters(self, weights_change, bias_change):
+        if not self.identity:
+            self.weights += weights_change
+        if not self.zero_bias:
+            self.bias += bias_change

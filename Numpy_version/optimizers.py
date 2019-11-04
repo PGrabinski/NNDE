@@ -28,7 +28,7 @@ class Optimizer:
         layers_to_train = [network.layers[len(network.layers) - i - 1]
                            for i in range(len(network.layers))]
 
-        previous_delta = network.loss(X, Y, derivative=True, **kwargs)
+        previous_delta = network.loss(X, derivative=True, **kwargs)
 
         for id, layer in enumerate(layers_to_train):
             previous_delta = self.update_layer(layer=layer, further_signal=previous_delta,

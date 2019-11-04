@@ -33,27 +33,26 @@ def measure_accuracy(a, b, loss,
                         hidden_derivative,
                         visible_derivative,
                         initial_value,
-                        boundary_function,
+                        vanishing_function,
                         exact_function,
-                        epochs=10000): 
+                        epochs=1000, verbose=True): 
     train, interpolation = train_test_dataset(a, b)
     
     solution = nnde.TrialSolution(loss_function=total_loss_function,
-                                        loss_function_single_point=example1_loss_function_single_point,
-                                        bias_change=example1_bias_change,
-                                        hidden_weights_change=example1_hidden_weights_change,
-                                        visible_weights_change=example1_visible_weights_change,
-                                        boundary_condition_value_function=example1_initial_value,
-                                        boundary_vanishing_function=example1_boundary_vanishing,
-                                        input_dim=1, hidden_dim=10, output_dim=1, learning_rate=1e-1, momentum=1e-1)
+                                        loss_function_single_point=loss,
+                                        bias_change=bias_derivative,
+                                        hidden_weights_change=hidden_derivative,
+                                        visible_weights_change=visible_derivative,
+                                        boundary_condition_value_function=initial_value,
+                                        boundary_vanishing_function=vanishing_function,
+                                        input_dim=1, hidden_dim=10, output_dim=1,
+                                        learning_rate=1e-1, momentum=1e-1, verbose=verbose)
     solution.train(train, epochs)
     
     predict_train = np.array([solution.predict(train[i]) for i in range(train.shape[0])]).reshape((train.shape[0],))
     predict_interpolation =  np.array([solution.predict(interpolation[i]) for i in range(interpolation.shape[0])]).reshape((interpolation.shape[0],))
-
-    ground_truth_train = np.array([exact_function(train[i]) for i in range(train.shape[0])])
-    ground_truth_interpolation = np.array([exact_function(interpolation[i]) for i in range(interpolation.shape[0])])
-
+    ground_truth_train = np.array([exact_function(train[i]) for i in range(train.shape[0])]).flatten()
+    ground_truth_interpolation = np.array([exact_function(interpolation[i]) for i in range(interpolation.shape[0])]).flatten()
     train_abs = np.abs(predict_train - ground_truth_train).mean()
     interpolation_abs = np.abs(predict_interpolation - ground_truth_interpolation).mean()
 
@@ -108,11 +107,11 @@ def example1_visible_weights_change(self, point, *kwargs):
                 point * dV_DN[0, 0, m, p] + dV_N[0, 0, m, p] + (point + (1 + 3 * point ** 2)/(1 + point + point ** 3)) * point * dV_N[0, 0, m, p])
     return dV
 
-def example1_initial_value(point):
+def example1_initial_value(x):
     return 1
 
-def example1_boundary_vanishing(point):
-    return point
+def example1_boundary_vanishing(x):
+    return x
 
 psi_e1 = lambda x:  np.exp(-0.5*x**2)/(1+x+x**3) + x**2
 
@@ -163,6 +162,12 @@ def example2_visible_weights_change(self, point, *kwargs):
     
 psi_e2 = lambda x: np.exp(-0.2*x) * np.sin(x)
 
+def example2_initial_value(x):
+    return 0
+
+def example2_boundary_vanishing(x):
+    return x
+
 ##################################################################################################################
 # Example 3
 ##################################################################################################################    
@@ -200,7 +205,7 @@ def example3_hidden_weights_change(self, point, *kwargs):
     dH_D2N = self.network_derivative_hidden_weights(point, 2)
     for m in range(self.hidden_dim):
         for p in range(self.input_dim):
-            H[m, p] += 2 * loss_sqrt * (2 * dH_N[0, 0, m, p] + 4 * point * dH_DN[0, 0, m, p] + point ** 2 * dH_D2N[0, 0, m, p]
+            dH[m, p] += 2 * loss_sqrt * (2 * dH_N[0, 0, m, p] + 4 * point * dH_DN[0, 0, m, p] + point ** 2 * dH_D2N[0, 0, m, p]
                                 + 0.2 * (2 * point * dH_N[0, 0, m, p] + point ** 2 * dH_DN[0, 0, m, p])
                                 + point ** 2 * dH_N[0, 0, m, p]
         )
@@ -221,3 +226,9 @@ def example3_visible_weights_change(self, point, *kwargs):
     return dV
 
 psi_e3 = lambda x: np.exp(-0.2*x) * np.sin(x)
+
+def example3_initial_value(x):
+    return x
+
+def example3_boundary_vanishing(x):
+    return x ** 2
