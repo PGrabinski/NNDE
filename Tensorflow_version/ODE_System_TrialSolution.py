@@ -30,7 +30,7 @@ class ODE_System_TrialSolution(tf.keras.models.Model):
 
     def call(self, X):
         X = tf.convert_to_tensor(X)
-        if not self.call_method is None:
+        if not (self.call_method is None):
             return self.call_method(self, X)
         responses = []
         for i in range(self.ODE_number):
@@ -70,4 +70,5 @@ class ODE_System_TrialSolution(tf.keras.models.Model):
                                            - tf.reshape(X[:, condition['variable']], shape=boundary_value.shape))
             responses[ode] += boundary_value
         response = tf.concat(responses, axis=1)
-        return responses
+        # print(response.shape)
+        return response

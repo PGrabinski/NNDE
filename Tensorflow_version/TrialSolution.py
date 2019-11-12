@@ -45,24 +45,37 @@ class TrialSolution(tf.keras.models.Model):
         if not isinstance(message_frequency, int) or message_frequency < 1:
             raise Exception(
                 'message_frequency parameter should be a positive integer.')
-        optimizer = 0
+        optimizer = None
         if optimizer_name == 'Adam':
             optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         elif optimizer_name == 'SGD':
             optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
-        train_loss = tf.keras.metrics.Mean('train')
+        else:
+            raise Exception(
+                'Chosen optimizer is not supported.')
+        # train_loss = tf.keras.metrics.Mean('train')
         @tf.function
         def train_step(X):
+            # print('pre loss')
             with tf.GradientTape() as tape:
                 loss = diff_loss(self, X)
+            # print('post tape')
             gradients = tape.gradient(
                 loss, self.trial_solution.trainable_variables)
+            # print('post gradient')
             optimizer.apply_gradients(
                 zip(gradients, self.trial_solution.trainable_variables))
+            # print('post apply')
+        # print('Before epoch loop')
         for epoch in range(epochs):
+            # print(X.shape)
             for x in X:
+                # print(x.shape)
+                # print(X.shape[1])
                 x_tensor = tf.reshape(x, shape=(1, X.shape[1]))
+                # print(x_tensor.shape)
                 train_step(x_tensor)
-            train_loss(diff_loss(self,X))
-            if (epoch+1) % message_frequency == 0:
-                print(f'Epoch: {epoch+1} Loss: {train_loss.result().numpy()}')
+            # train_loss(diff_loss(self,X))
+            if verbose and ((epoch+1) % message_frequency == 0):
+                # print(f'Epoch: {epoch+1} Loss: {train_loss.result().numpy()}')
+                print(f'Epoch: {epoch+1} Loss: {diff_loss(self, X)}')

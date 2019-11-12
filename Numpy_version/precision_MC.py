@@ -34,7 +34,7 @@ def measure_accuracy(a, b, loss,
                         visible_derivative,
                         initial_value,
                         vanishing_function,
-                        exact_function,
+                        exact_function, learning_rate=1e-1,
                         epochs=1000, verbose=True): 
     train, interpolation = train_test_dataset(a, b)
     
@@ -46,7 +46,7 @@ def measure_accuracy(a, b, loss,
                                         boundary_condition_value_function=initial_value,
                                         boundary_vanishing_function=vanishing_function,
                                         input_dim=1, hidden_dim=10, output_dim=1,
-                                        learning_rate=1e-1, momentum=1e-1, verbose=verbose)
+                                        learning_rate=learning_rate, momentum=1e-1, verbose=verbose)
     solution.train(train, epochs)
     
     predict_train = np.array([solution.predict(train[i]) for i in range(train.shape[0])]).reshape((train.shape[0],))
